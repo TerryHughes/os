@@ -21,6 +21,11 @@ GOTO compile
 IF NOT EXIST data MKDIR data
 IF NOT EXIST build MKDIR build
 
+SET tool=assembler
+ctime -begin data\%tool%.ctm
+cl %CommomCompilerFlags% /Fe:build\%tool% /Fm:build\%tool% /Fo:build\%tool% toolchain\%tool%\platforms\WindowsAPI\main.c /link %CommonLinkerFlags%
+ctime -end data\%tool%.ctm %ERRORLEVEL%
+
 ctags --exclude=data --recurse *
 
 ENDLOCAL
