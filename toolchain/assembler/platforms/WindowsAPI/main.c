@@ -1,6 +1,6 @@
-#include "..\\..\\..\\common\\types.c"
-#include "..\\..\\..\\common\\macros.c"
-#include "..\\..\\..\\common\\logging.c"
+#include "..\\..\\..\\common\\types.h"
+#include "..\\..\\..\\common\\macros.h"
+#include "..\\..\\..\\common\\logging.h"
 #include "..\\..\\..\\common\\functions.c"
 
 #include "..\\..\\..\\common\\platforms\\WindowsAPI\\file.h"
