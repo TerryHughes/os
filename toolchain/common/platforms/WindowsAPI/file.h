@@ -15,11 +15,19 @@ typedef enum
 
     FileOperationStatus_UnexpectedNumberOfBytesRead = 21,
     FileOperationStatus_FailedToRead = 22,
+
+    FileOperationStatus_UnexpectedNumberOfBytesWritten = 31,
+    FileOperationStatus_FailedToWrite = 32,
 } FileOperationStatus;
 
 typedef struct
 {
-    int status;
+    u8 status;
     u32 contentSize;
     void *contents;
 } ReadFileResult;
+
+typedef struct
+{
+    u8 status;
+} WriteFileResult;

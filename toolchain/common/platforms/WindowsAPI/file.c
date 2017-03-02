@@ -63,3 +63,44 @@ WindowsAPI_ReadFile(char *filePath)
 
     return result;
 }
+
+internal WriteFileResult
+WindowsAPI_WriteFile(char *filePath, Output output)
+{
+    WriteFileResult result = {0};
+
+    HANDLE fileHandle = CreateFileA(filePath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        PrintLine("Failed to acquire file handle to '%s'", filePath);
+
+        result.status = FileOperationStatus_FailedToAcquireFileHandle;
+    }
+    else
+    {
+        DWORD bytesWritten;
+        if (WriteFile(fileHandle, output.memory, output.memorySize, &bytesWritten, NULL))
+        {
+            if (bytesWritten == output.memorySize)
+            {
+                result.status = FileOperationStatus_Success;
+            }
+            else
+            {
+                PrintLine("Expected to write %d byte%s but actually wrote %d byte%s", output.memorySize, output.memorySize == 1 ? "" : "s", bytesWritten, bytesWritten == 1 ? "" : "s");
+
+                result.status = FileOperationStatus_UnexpectedNumberOfBytesWritten;
+            }
+        }
+        else
+        {
+            PrintLine("Failed to write file '%s'", filePath);
+
+            result.status = FileOperationStatus_FailedToWrite;
+        }
+
+        CloseHandle(fileHandle);
+    }
+
+    return result;
+}
