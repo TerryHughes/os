@@ -27,5 +27,3 @@ cl %CommonCompilerFlags% /Fe:build\%tool% /Fm:build\%tool% /Fo:build\%tool% tool
 ctime -end data\%tool%.ctm %ERRORLEVEL%
 
 ctags --exclude=data --recurse *
-
-ENDLOCAL
