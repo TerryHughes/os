@@ -41,6 +41,7 @@ main(int argc, char *argv[], char *envp[])
             output.memory = VirtualAlloc(NULL, output.memorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
             u16 memoryIndex = 0;
 
+            u16 times = 1;
             u8 *at = readFileResult.contents;
             while (*at)
             {
@@ -80,8 +81,26 @@ main(int argc, char *argv[], char *envp[])
                             value += at[i] - '0';
                         }
                     }
-                    output.memory[memoryIndex++] = value;
+                    for (;times > 0; --times)
+                    {
+                        output.memory[memoryIndex++] = value;
+                    }
+                    times = 1;
                     at += length;
+                }
+                else if (at[0] == 't' && at[1] == 'i' && at[2] == 'm' && at[3] == 'e' && at[4] == 's' && at[5] == ' ')
+                {
+                    at += 6;
+                    u8 length = 0;
+                    while (at[length] != ' ') ++length;
+
+                    times = 0;
+                    for (int i = 0; i < length; ++i)
+                    {
+                        times *= 10;
+
+                        times += at[i] - '0';
+                    }
                 }
                 else if (at[0] == '\r' && at[1] == '\n')
                 {
