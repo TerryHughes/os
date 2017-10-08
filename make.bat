@@ -10,7 +10,7 @@ IF "%1"=="release" GOTO release
 :debug
 SET CommonCompilerFlags=%CommonCompilerFlags% /D DEBUG
 SET CommonCompilerFlags=%CommonCompilerFlags% /D SLOW
-SET CommonLinkerFlags=%CommomLinkerFlags% /DEBUG
+SET CommonLinkerFlags=%CommonLinkerFlags% /DEBUG
 GOTO compile
 
 :release
