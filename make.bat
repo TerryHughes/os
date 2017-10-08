@@ -10,7 +10,7 @@ IF "%1"=="release" GOTO release
 :debug
 SET CommonCompilerFlags=%CommonCompilerFlags% /D DEBUG
 SET CommonCompilerFlags=%CommonCompilerFlags% /D SLOW
-SET CommonLinkerFlags=%CommomLinkerFlags% /DEBUG
+SET CommonLinkerFlags=%CommonLinkerFlags% /DEBUG
 GOTO compile
 
 :release
@@ -22,7 +22,7 @@ IF NOT EXIST data MKDIR data
 IF NOT EXIST build MKDIR build
 
 SET ctimeAvailable=false
-WHERE ctime > NUL 2> NUL
+where ctime > NUL 2> NUL
 IF %ERRORLEVEL%==0 SET ctimeAvailable=true
 
 SET tool=assembler
@@ -31,7 +31,7 @@ cl %CommonCompilerFlags% /Fe:build\%tool% /Fm:build\%tool% /Fo:build\%tool% tool
 IF %ctimeAvailable%==true ctime -end data\%tool%.ctm %ERRORLEVEL%
 
 SET ctagsAvailable=false
-WHERE ctags > NUL 2> NUL
+where ctags > NUL 2> NUL
 IF %ERRORLEVEL%==0 SET ctagsAvailable=true
 
 IF %ctagsAvailable%==true ctags --exclude=data --recurse *

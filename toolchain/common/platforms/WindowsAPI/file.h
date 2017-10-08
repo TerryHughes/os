@@ -24,7 +24,7 @@ typedef struct
 {
     u8 status;
     u32 contentSize;
-    void *contents;
+    u8 *contents;
 } ReadFileResult;
 
 typedef struct

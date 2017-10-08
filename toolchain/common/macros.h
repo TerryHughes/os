@@ -1,6 +1,4 @@
-#if !defined(internal)
-    #define internal static
-#endif
+#define internal static
 
 #define U32Maximum ((u32)-1)
 

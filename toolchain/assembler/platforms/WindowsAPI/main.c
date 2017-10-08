@@ -5,7 +5,7 @@
 
 typedef struct
 {
-    u16 memorySize;
+    u32 memorySize;
     u8 *memory;
 } Output;
 
@@ -26,10 +26,10 @@ main(int argc, char *argv[], char *envp[])
     }
     else
     {
-        char *inputPath = argv[1];
-        char *outputPath = argv[2];
+        char *inputFilePath = argv[1];
+        char *outputFilePath = argv[2];
 
-        ReadFileResult readFileResult = WindowsAPI_ReadFile(inputPath);
+        ReadFileResult readFileResult = WindowsAPI_ReadFile(inputFilePath);
         result = readFileResult.status;
 
         if (readFileResult.status == FileOperationStatus_Success)
@@ -37,10 +37,82 @@ main(int argc, char *argv[], char *envp[])
             PrintLine("success\n%d\n%s", readFileResult.contentSize, (char *)readFileResult.contents);
 
             Output output = {0};
-            output.memorySize = (u16)readFileResult.contentSize;
-            output.memory = readFileResult.contents;
+            output.memorySize = 512;
+            output.memory = VirtualAlloc(NULL, output.memorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+            u16 memoryIndex = 0;
 
-            WriteFileResult writeFileResult = WindowsAPI_WriteFile(outputPath, output);
+            u16 times = 1;
+            u8 *at = readFileResult.contents;
+            while (*at)
+            {
+                if (at[0] == 'd' && at[1] == 'b' && at[2] == ' ')
+                {
+                    at += 3;
+                    u8 length = 0;
+                    while (at[length] != '\r') ++length;
+
+                    u8 value = 0;
+                    if (at[0] == '0' && at[1] == 'x')
+                    {
+                        for (int i = 2; i < length; ++i)
+                        {
+                            value *= 16;
+
+                            if (at[i] >= '0' && at[i] <= '9')
+                            {
+                                value += at[i] - '0';
+                            }
+                            else if (at[i] >= 'A' && at[i] <= 'F')
+                            {
+                                value += at[i] - 'A' + 10;
+                            }
+                            else if (at[i] >= 'a' && at[i] <= 'f')
+                            {
+                                value += at[i] - 'a' + 10;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < length; ++i)
+                        {
+                            value *= 10;
+
+                            value += at[i] - '0';
+                        }
+                    }
+                    for (;times > 0; --times)
+                    {
+                        output.memory[memoryIndex++] = value;
+                    }
+                    times = 1;
+                    at += length;
+                }
+                else if (at[0] == 't' && at[1] == 'i' && at[2] == 'm' && at[3] == 'e' && at[4] == 's' && at[5] == ' ')
+                {
+                    at += 6;
+                    u8 length = 0;
+                    while (at[length] != ' ') ++length;
+
+                    times = 0;
+                    for (int i = 0; i < length; ++i)
+                    {
+                        times *= 10;
+
+                        times += at[i] - '0';
+                    }
+                }
+                else if (at[0] == '\r' && at[1] == '\n')
+                {
+                    at += 2;
+                }
+                else
+                {
+                    ++at;
+                }
+            }
+
+            WriteFileResult writeFileResult = WindowsAPI_WriteFile(outputFilePath, output);
             result = writeFileResult.status;
 
             if (writeFileResult.status == FileOperationStatus_Success)
