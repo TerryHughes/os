@@ -5,7 +5,7 @@
 
 typedef struct
 {
-    u16 memorySize;
+    u32 memorySize;
     u8 *memory;
 } Output;
 
@@ -37,7 +37,7 @@ main(int argc, char *argv[], char *envp[])
             PrintLine("success\n%d\n%s", readFileResult.contentSize, (char *)readFileResult.contents);
 
             Output output = {0};
-            output.memorySize = (u16)readFileResult.contentSize;
+            output.memorySize = readFileResult.contentSize;
             output.memory = readFileResult.contents;
 
             WriteFileResult writeFileResult = WindowsAPI_WriteFile(outputFilePath, output);
