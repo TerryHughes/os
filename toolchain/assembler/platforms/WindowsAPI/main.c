@@ -37,8 +37,38 @@ main(int argc, char *argv[], char *envp[])
             PrintLine("success\n%d\n%s", readFileResult.contentSize, (char *)readFileResult.contents);
 
             Output output = {0};
-            output.memorySize = readFileResult.contentSize;
-            output.memory = readFileResult.contents;
+            output.memorySize = 512;
+            output.memory = VirtualAlloc(NULL, output.memorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+            u16 memoryIndex = 0;
+
+            u8 *at = readFileResult.contents;
+            while (*at)
+            {
+                if (at[0] == 'd' && at[1] == 'b' && at[2] == ' ')
+                {
+                    at += 3;
+                    u8 length = 0;
+                    while (at[length] != '\r') ++length;
+
+                    u8 value = 0;
+                    for (int i = 0; i < length; ++i)
+                    {
+                        value *= 10;
+
+                        value += at[i] - '0';
+                    }
+                    output.memory[memoryIndex++] = value;
+                    at += length;
+                }
+                else if (at[0] == '\r' && at[1] == '\n')
+                {
+                    at += 2;
+                }
+                else
+                {
+                    ++at;
+                }
+            }
 
             WriteFileResult writeFileResult = WindowsAPI_WriteFile(outputFilePath, output);
             result = writeFileResult.status;
