@@ -51,11 +51,34 @@ main(int argc, char *argv[], char *envp[])
                     while (at[length] != '\r') ++length;
 
                     u8 value = 0;
-                    for (int i = 0; i < length; ++i)
+                    if (at[0] == '0' && at[1] == 'x')
                     {
-                        value *= 10;
+                        for (int i = 2; i < length; ++i)
+                        {
+                            value *= 16;
 
-                        value += at[i] - '0';
+                            if (at[i] >= '0' && at[i] <= '9')
+                            {
+                                value += at[i] - '0';
+                            }
+                            else if (at[i] >= 'A' && at[i] <= 'F')
+                            {
+                                value += at[i] - 'A' + 10;
+                            }
+                            else if (at[i] >= 'a' && at[i] <= 'f')
+                            {
+                                value += at[i] - 'a' + 10;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < length; ++i)
+                        {
+                            value *= 10;
+
+                            value += at[i] - '0';
+                        }
                     }
                     output.memory[memoryIndex++] = value;
                     at += length;
