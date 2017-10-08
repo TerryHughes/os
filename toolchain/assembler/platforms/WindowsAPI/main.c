@@ -26,10 +26,10 @@ main(int argc, char *argv[], char *envp[])
     }
     else
     {
-        char *inputPath = argv[1];
-        char *outputPath = argv[2];
+        char *inputFilePath = argv[1];
+        char *outputFilePath = argv[2];
 
-        ReadFileResult readFileResult = WindowsAPI_ReadFile(inputPath);
+        ReadFileResult readFileResult = WindowsAPI_ReadFile(inputFilePath);
         result = readFileResult.status;
 
         if (readFileResult.status == FileOperationStatus_Success)
@@ -40,7 +40,7 @@ main(int argc, char *argv[], char *envp[])
             output.memorySize = (u16)readFileResult.contentSize;
             output.memory = readFileResult.contents;
 
-            WriteFileResult writeFileResult = WindowsAPI_WriteFile(outputPath, output);
+            WriteFileResult writeFileResult = WindowsAPI_WriteFile(outputFilePath, output);
             result = writeFileResult.status;
 
             if (writeFileResult.status == FileOperationStatus_Success)
