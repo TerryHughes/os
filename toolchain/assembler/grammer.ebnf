@@ -1,0 +1,23 @@
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" |
+         "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+base-10-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+base-16-digit = base10_digit |
+                "A" | "B" | "C" | "D" | "E" | "F" |
+                "a" | "b" | "c" | "d" | "e" | "f" ;
+identifier = letter , { letter , base-10-digit } ;
+
+end-of-line = "\r\n" ;
+end-of-stream = 0 ;
+
+decimal = base-10-digit , { base-10-digit } ;
+hexadecimal = "0x" , base-16-digit , { base-16-digit } ;
+numeric = decimal | hexadecimal ;
+
+times = "times" , decimal ;
+define-byte = [ times ] , "db" , numeric ;
+label = identifier , ":" ;
+jump = "jmp" , ( numeric | identifier ) ;
+instruction = ( label | define-byte | jump } ;
+
+line = { instruction } , end-of-line ;
+file = { line } , end-of-stream ;
