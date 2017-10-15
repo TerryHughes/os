@@ -34,6 +34,7 @@ typedef struct
     u8 type;
     char *text;
     u8 length;
+    u16 value;
 } Token;
 
 Token
@@ -72,10 +73,29 @@ GetToken(char *at)
         result.type = TokenType_Hexadecimal;
         result.length = 2;
 
-        while ((at[result.length] >= '0' && at[result.length] <= '9') ||
-               (at[result.length] >= 'A' && at[result.length] <= 'F') ||
-               (at[result.length] >= 'a' && at[result.length] <= 'f'))
+        while (1)
         {
+            if (at[result.length] >= '0' && at[result.length] <= '9')
+            {
+                // TODO(TerryH): figure out a better way to multiple the value without having to specify it in each case
+                result.value *= 16;
+                result.value += at[result.length] - '0';
+            }
+            else if (at[result.length] >= 'A' && at[result.length] <= 'F')
+            {
+                result.value *= 16;
+                result.value += at[result.length] - 'A' + 10;
+            }
+            else if (at[result.length] >= 'a' && at[result.length] <= 'f')
+            {
+                result.value *= 16;
+                result.value += at[result.length] - 'a' + 10;
+            }
+            else
+            {
+                break;
+            }
+
             ++result.length;
         }
     }
@@ -83,8 +103,18 @@ GetToken(char *at)
     {
         result.type = TokenType_Decimal;
 
-        while (at[result.length] >= '0' && at[result.length] <= '9')
+        while (1)
         {
+            if (at[result.length] >= '0' && at[result.length] <= '9')
+            {
+                result.value *= 10;
+                result.value += at[result.length] - '0';
+            }
+            else
+            {
+                break;
+            }
+
             ++result.length;
         }
     }
@@ -102,48 +132,20 @@ Assemble(char *contents, u8 *output)
     {
         if (token.type == TokenType_Times)
         {
-            times = 0;
             token = GetToken(token.text + token.length);
-            for (u8 i = 0; i < token.length; ++i)
-            {
-                times *= 10;
-
-                times += token.text[i] - '0';
-            }
+            times = token.value;
         }
         else if (token.type == TokenType_DefineByte)
         {
             u8 value = 0;
+
             token = GetToken(token.text + token.length);
-            if (token.type == TokenType_Hexadecimal)
+            if (token.type == TokenType_Decimal ||
+                token.type == TokenType_Hexadecimal)
             {
-                for (u8 i = 2; i < token.length; ++i)
-                {
-                    value *= 16;
-
-                    if (token.text[i] >= '0' && token.text[i] <= '9')
-                    {
-                        value += token.text[i] - '0';
-                    }
-                    else if (token.text[i] >= 'A' && token.text[i] <= 'F')
-                    {
-                        value += token.text[i] - 'A' + 10;
-                    }
-                    else if (token.text[i] >= 'a' && token.text[i] <= 'f')
-                    {
-                        value += token.text[i] - 'a' + 10;
-                    }
-                }
+                value = (u8)token.value;
             }
-            else
-            {
-                for (u8 i = 0; i < token.length; ++i)
-                {
-                    value *= 10;
 
-                    value += token.text[i] - '0';
-                }
-            }
             for (; times > 0; --times)
             {
                 output[index++] = value;
