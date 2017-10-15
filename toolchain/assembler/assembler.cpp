@@ -133,7 +133,10 @@ Assemble(char *contents, u8 *output)
         if (token.type == TokenType_Times)
         {
             token = GetToken(token.text + token.length);
-            times = token.value;
+            if (token.type == TokenType_Decimal)
+            {
+                times = token.value;
+            }
         }
         else if (token.type == TokenType_DefineByte)
         {
