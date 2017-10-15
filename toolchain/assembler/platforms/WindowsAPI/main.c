@@ -107,6 +107,67 @@ GetToken(char *at)
     return result;
 }
 
+void
+Assemble(char *contents, u8 *output)
+{
+    u16 index = 0;
+
+    Token token = GetToken(contents);
+    for (u16 times = 1; token.type != TokenType_EndOfStream; token = GetToken(token.text + token.length))
+    {
+        if (token.type == TokenType_Times)
+        {
+            times = 0;
+            token = GetToken(token.text + token.length);
+            for (u8 i = 0; i < token.length; ++i)
+            {
+                times *= 10;
+
+                times += token.text[i] - '0';
+            }
+        }
+        else if (token.type == TokenType_DefineByte)
+        {
+            u8 value = 0;
+            token = GetToken(token.text + token.length);
+            if (token.type == TokenType_Hexadecimal)
+            {
+                for (u8 i = 2; i < token.length; ++i)
+                {
+                    value *= 16;
+
+                    if (token.text[i] >= '0' && token.text[i] <= '9')
+                    {
+                        value += token.text[i] - '0';
+                    }
+                    else if (token.text[i] >= 'A' && token.text[i] <= 'F')
+                    {
+                        value += token.text[i] - 'A' + 10;
+                    }
+                    else if (token.text[i] >= 'a' && token.text[i] <= 'f')
+                    {
+                        value += token.text[i] - 'a' + 10;
+                    }
+                }
+            }
+            else
+            {
+                for (u8 i = 0; i < token.length; ++i)
+                {
+                    value *= 10;
+
+                    value += token.text[i] - '0';
+                }
+            }
+            for (; times > 0; --times)
+            {
+                output[index++] = value;
+            }
+            times = 1;
+        }
+    }
+}
+
 int
 main(int argc, char *argv[], char *envp[])
 {
@@ -133,62 +194,8 @@ main(int argc, char *argv[], char *envp[])
             Output output = {0};
             output.memorySize = 512;
             output.memory = VirtualAlloc(NULL, output.memorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-            u16 memoryIndex = 0;
 
-            Token token = GetToken((char *)readFileResult.contents);
-            for (u16 times = 1; token.type != TokenType_EndOfStream; token = GetToken(token.text + token.length))
-            {
-                if (token.type == TokenType_Times)
-                {
-                    times = 0;
-                    token = GetToken(token.text + token.length);
-                    for (u8 i = 0; i < token.length; ++i)
-                    {
-                        times *= 10;
-
-                        times += token.text[i] - '0';
-                    }
-                }
-                else if (token.type == TokenType_DefineByte)
-                {
-                    u8 value = 0;
-                    token = GetToken(token.text + token.length);
-                    if (token.type == TokenType_Hexadecimal)
-                    {
-                        for (u8 i = 2; i < token.length; ++i)
-                        {
-                            value *= 16;
-
-                            if (token.text[i] >= '0' && token.text[i] <= '9')
-                            {
-                                value += token.text[i] - '0';
-                            }
-                            else if (token.text[i] >= 'A' && token.text[i] <= 'F')
-                            {
-                                value += token.text[i] - 'A' + 10;
-                            }
-                            else if (token.text[i] >= 'a' && token.text[i] <= 'f')
-                            {
-                                value += token.text[i] - 'a' + 10;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (u8 i = 0; i < token.length; ++i)
-                        {
-                            value *= 10;
-
-                            value += token.text[i] - '0';
-                        }
-                    }
-                    for (; times > 0; --times)
-                    {
-                        output.memory[memoryIndex++] = value;
-                    }
-                    times = 1;
-                }
-            }
+            Assemble((char *)readFileResult.contents, output.memory);
 
             WriteFileResult writeFileResult = WindowsAPI_WriteFile(outputFilePath, output);
             result = writeFileResult.status;
