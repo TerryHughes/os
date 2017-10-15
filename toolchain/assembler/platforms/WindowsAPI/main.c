@@ -135,9 +135,8 @@ main(int argc, char *argv[], char *envp[])
             output.memory = VirtualAlloc(NULL, output.memorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
             u16 memoryIndex = 0;
 
-            u16 times = 1;
             Token token = GetToken((char *)readFileResult.contents);
-            for (;token.type != TokenType_EndOfStream; token = GetToken(token.text + token.length))
+            for (u16 times = 1; token.type != TokenType_EndOfStream; token = GetToken(token.text + token.length))
             {
                 if (token.type == TokenType_Times)
                 {
@@ -183,7 +182,7 @@ main(int argc, char *argv[], char *envp[])
                             value += token.text[i] - '0';
                         }
                     }
-                    for (;times > 0; --times)
+                    for (; times > 0; --times)
                     {
                         output.memory[memoryIndex++] = value;
                     }
