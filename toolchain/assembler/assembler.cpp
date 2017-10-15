@@ -24,6 +24,7 @@ typedef enum
     TokenType_Decimal,
     TokenType_Hexadecimal,
 
+    TokenType_Label,
     TokenType_Times,
     TokenType_DefineByte,
     TokenType_Jump,
@@ -107,6 +108,21 @@ GetToken(char *at)
             ++result.length;
         }
     }
+    else if ((at[result.length] >= 'A' && at[result.length] <= 'Z') ||
+             (at[result.length] >= 'a' && at[result.length] <= 'z'))
+    {
+        result.type = TokenType_Label;
+
+        while (at[result.length] != ':' && !StringStartsWith(at + result.length, "\r\n"))
+        {
+            ++result.length;
+        }
+
+        if (at[result.length] == ':')
+        {
+            ++result.length;
+        }
+    }
     else
     {
         result.type = TokenType_Decimal;
@@ -140,10 +156,16 @@ Assemble(char *contents, u8 *output)
 {
     u16 index = 0;
 
+    Token label = {0};
     Token token = GetToken(contents);
     for (u16 times = 1; token.type != TokenType_EndOfStream; token = GetToken(token.text + token.length))
     {
-        if (token.type == TokenType_Times)
+        if (token.type == TokenType_Label)
+        {
+            label = token;
+            label.value = index;
+        }
+        else if (token.type == TokenType_Times)
         {
             token = GetToken(token.text + token.length);
             if (token.type == TokenType_Decimal)
@@ -170,12 +192,16 @@ Assemble(char *contents, u8 *output)
         }
         else if (token.type == TokenType_Jump)
         {
+            output[index++] = 0xEB;
             token = GetToken(token.text + token.length);
             if (token.type == TokenType_Decimal ||
                 token.type == TokenType_Hexadecimal)
             {
-                output[index++] = 0xEB;
                 output[index++] = (u8)token.value;
+            }
+            else if (token.type == TokenType_Label)
+            {
+                output[index++] = (u8)(label.value - (index + 1));
             }
         }
         else if (token.type == TokenType_Unknown)
