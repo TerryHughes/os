@@ -14,6 +14,8 @@ numeric = decimal | hexadecimal ;
 
 times = "times" , decimal ;
 define-byte = [ times ] , "db" , numeric ;
+jump = "jmp" , numeric ;
+instruction = ( define-byte | jump } ;
 
-line = { define-byte } , end-of-line ;
+line = { instruction } , end-of-line ;
 file = { line } , end-of-stream ;

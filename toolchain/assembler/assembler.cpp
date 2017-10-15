@@ -19,11 +19,14 @@ StringStartsWith(char *a, char *b)
 
 typedef enum
 {
+    TokenType_Unknown,
+
     TokenType_Decimal,
     TokenType_Hexadecimal,
 
     TokenType_Times,
     TokenType_DefineByte,
+    TokenType_Jump,
 
     TokenType_EndOfLine,
     TokenType_EndOfStream,
@@ -67,6 +70,11 @@ GetToken(char *at)
     {
         result.type = TokenType_DefineByte;
         result.length = 2;
+    }
+    else if (StringStartsWith(at, "jmp"))
+    {
+        result.type = TokenType_Jump;
+        result.length = 3;
     }
     else if (StringStartsWith(at, "0x"))
     {
@@ -119,6 +127,11 @@ GetToken(char *at)
         }
     }
 
+    if (result.length == 0)
+    {
+        result.type = TokenType_Unknown;
+    }
+
     return result;
 }
 
@@ -154,6 +167,20 @@ Assemble(char *contents, u8 *output)
                 output[index++] = value;
             }
             times = 1;
+        }
+        else if (token.type == TokenType_Jump)
+        {
+            token = GetToken(token.text + token.length);
+            if (token.type == TokenType_Decimal ||
+                token.type == TokenType_Hexadecimal)
+            {
+                output[index++] = 0xEB;
+                output[index++] = (u8)token.value;
+            }
+        }
+        else if (token.type == TokenType_Unknown)
+        {
+            break;
         }
     }
 }
