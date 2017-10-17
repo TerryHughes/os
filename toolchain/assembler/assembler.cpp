@@ -159,6 +159,7 @@ GetToken(char *at)
     if (result.length == 0)
     {
         result.type = TokenType_Unknown;
+        result.length = 1;
     }
 
     return result;
