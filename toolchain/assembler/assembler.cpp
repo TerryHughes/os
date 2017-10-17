@@ -86,7 +86,7 @@ GetToken(char *at)
         {
             if (at[result.length] >= '0' && at[result.length] <= '9')
             {
-                // TODO(TerryH): figure out a better way to multiple the value without having to specify it in each case
+                // TODO(TerryH): figure out a better way to multiply the value without having to specify it in each case
                 result.value *= 16;
                 result.value += at[result.length] - '0';
             }
