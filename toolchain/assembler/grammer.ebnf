@@ -13,11 +13,12 @@ decimal = base-10-digit , { base-10-digit } ;
 hexadecimal = "0x" , base-16-digit , { base-16-digit } ;
 numeric = decimal | hexadecimal ;
 
-numeric-term = numeric , { ( "*" | "/" ) , numeric } ;
-numeric-expression = numeric , { ( "+" | "-" ) , numeric } ;
+numeric-factor = numeric ;
+numeric-term = numeric-factor , { ( "*" | "/" ) , numeric-factor } ;
+numeric-expression = numeric-term , { ( "+" | "-" ) , numeric-term } ;
 
 times = "times" , numeric-expression ;
-define-byte = [ times ] , "db" , numeric-term ;
+define-byte = [ times ] , "db" , numeric-expression ;
 label = identifier , ":" ;
 jump = "jmp" , ( numeric | identifier ) ;
 instruction = ( label | define-byte | jump ) ;

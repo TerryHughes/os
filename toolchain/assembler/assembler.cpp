@@ -77,11 +77,12 @@ GetToken(char *at)
         result.type = TokenType_HyphenMinus;
         result.length = 1;
     }
-    else if (at[result.length] == '/')
-    {
-        result.type = TokenType_Slash;
-        result.length = 1;
-    }
+    // TODO(TerryH): reallow divisions
+    //else if (at[result.length] == '/')
+    //{
+    //    result.type = TokenType_Slash;
+    //    result.length = 1;
+    //}
     else if (StringStartsWith(at, "\r\n"))
     {
         result.type = TokenType_EndOfLine;
@@ -176,6 +177,56 @@ GetToken(char *at)
 
     return result;
 }
+
+/*
+u16
+NumericFactor(Token *token)
+{
+    u16 result = 0;
+
+    result = token->value;
+
+    return result;
+}
+
+u16
+NumericTerm(Token *token)
+{
+    u16 result = 0;
+
+    do
+    {
+        result = NumericFactor(token);
+        *token = GetToken(token->text + token->length);
+    }
+    while (token->type == TokenType_Asterisk ||
+           token->type == TokenType_Slash)
+
+    //b32 multiplyOperation = token->type == TokenType_Asterisk ? 1 : 0;
+    //    result = multiplyOperation ? NumericFactor(token) : 1 / NumericFacotr(token);
+
+    return result;
+}
+// 2 + 3 * 4
+u16
+NumericExpression(Token *token)
+{
+    u16 result = 0;
+
+    do
+    {
+        result = NumericTerm(token);
+        *token = GetToken(token->text + token->length);
+    }
+    while (token->type == TokenType_PlusSign ||
+           token->type == TokenType_HyphenMinus)
+
+    //b32 addOperation = token->type == TokenType_PlusSign ? 1 : 0;
+    //    result = addOperation ? NumericTerm(token) : -NumericTerm(token);
+
+    return result;
+}
+*/
 
 void
 Assemble(char *contents, u8 *output)
