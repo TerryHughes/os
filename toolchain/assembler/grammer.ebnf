@@ -13,7 +13,9 @@ decimal = base-10-digit , { base-10-digit } ;
 hexadecimal = "0x" , base-16-digit , { base-16-digit } ;
 numeric = decimal | hexadecimal ;
 
-times = "times" , decimal ;
+numeric-expression = numeric , { ( "+" | "-" ) , numeric } ;
+
+times = "times" , numeric-expression ;
 define-byte = [ times ] , "db" , numeric ;
 label = identifier , ":" ;
 jump = "jmp" , ( numeric | identifier ) ;

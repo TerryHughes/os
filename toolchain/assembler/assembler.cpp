@@ -21,6 +21,9 @@ typedef enum
 {
     TokenType_Unknown,
 
+    TokenType_PlusSign,
+    TokenType_HyphenMinus,
+
     TokenType_Decimal,
     TokenType_Hexadecimal,
 
@@ -56,6 +59,16 @@ GetToken(char *at)
     {
         result.type = TokenType_EndOfStream;
         result.length = 0;
+    }
+    else if (at[result.length] == '+')
+    {
+        result.type = TokenType_PlusSign;
+        result.length = 1;
+    }
+    else if (at[result.length] == '-')
+    {
+        result.type = TokenType_HyphenMinus;
+        result.length = 1;
     }
     else if (StringStartsWith(at, "\r\n"))
     {
@@ -165,15 +178,29 @@ Assemble(char *contents, u8 *output)
             label = token;
             label.value = index;
         }
-        else if (token.type == TokenType_Times)
+
+        if (token.type == TokenType_Times)
         {
             token = GetToken(token.text + token.length);
-            if (token.type == TokenType_Decimal)
+            if (token.type == TokenType_Decimal ||
+                token.type == TokenType_Hexadecimal)
             {
                 times = token.value;
             }
+
+            for (token = GetToken(token.text + token.length); token.type != TokenType_DefineByte; token = GetToken(token.text + token.length))
+            {
+                b32 addOperation = token.type == TokenType_PlusSign ? 1 : 0;
+                token = GetToken(token.text + token.length);
+                if (token.type == TokenType_Decimal ||
+                    token.type == TokenType_Hexadecimal)
+                {
+                    times = addOperation ? times + token.value : times - token.value;
+                }
+            }
         }
-        else if (token.type == TokenType_DefineByte)
+
+        if (token.type == TokenType_DefineByte)
         {
             u8 value = 0;
 
@@ -190,7 +217,8 @@ Assemble(char *contents, u8 *output)
             }
             times = 1;
         }
-        else if (token.type == TokenType_Jump)
+
+        if (token.type == TokenType_Jump)
         {
             output[index++] = 0xEB;
             token = GetToken(token.text + token.length);
@@ -204,7 +232,8 @@ Assemble(char *contents, u8 *output)
                 output[index++] = (u8)(label.value - (index + 1));
             }
         }
-        else if (token.type == TokenType_Unknown)
+
+        if (token.type == TokenType_Unknown)
         {
             break;
         }
