@@ -21,8 +21,10 @@ typedef enum
 {
     TokenType_Unknown,
 
+    TokenType_Asterisk,
     TokenType_PlusSign,
     TokenType_HyphenMinus,
+    TokenType_Slash,
 
     TokenType_Decimal,
     TokenType_Hexadecimal,
@@ -60,6 +62,11 @@ GetToken(char *at)
         result.type = TokenType_EndOfStream;
         result.length = 0;
     }
+    else if (at[result.length] == '*')
+    {
+        result.type = TokenType_Asterisk;
+        result.length = 1;
+    }
     else if (at[result.length] == '+')
     {
         result.type = TokenType_PlusSign;
@@ -68,6 +75,11 @@ GetToken(char *at)
     else if (at[result.length] == '-')
     {
         result.type = TokenType_HyphenMinus;
+        result.length = 1;
+    }
+    else if (at[result.length] == '/')
+    {
+        result.type = TokenType_Slash;
         result.length = 1;
     }
     else if (StringStartsWith(at, "\r\n"))
@@ -210,6 +222,17 @@ Assemble(char *contents, u8 *output)
                 token.type == TokenType_Hexadecimal)
             {
                 value = (u8)token.value;
+            }
+
+            for (token = GetToken(token.text + token.length); token.type != TokenType_EndOfLine; token = GetToken(token.text + token.length))
+            {
+                b32 multiplyOperation = token.type == TokenType_Asterisk ? 1 : 0;
+                token = GetToken(token.text + token.length);
+                if (token.type == TokenType_Decimal ||
+                    token.type == TokenType_Hexadecimal)
+                {
+                    value = multiplyOperation ? value * (u8)token.value : value / (u8)token.value;
+                }
             }
 
             for (; times > 0; --times)
