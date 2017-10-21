@@ -21,6 +21,8 @@ typedef enum
 {
     TokenType_Unknown,
 
+    TokenType_LeftParenthesis,
+    TokenType_RightParenthesis,
     TokenType_Asterisk,
     TokenType_PlusSign,
     TokenType_HyphenMinus,
@@ -61,6 +63,16 @@ GetToken(char *at)
     {
         result.type = TokenType_EndOfStream;
         result.length = 0;
+    }
+    else if (at[result.length] == '(')
+    {
+        result.type = TokenType_LeftParenthesis;
+        result.length = 1;
+    }
+    else if (at[result.length] == ')')
+    {
+        result.type = TokenType_RightParenthesis;
+        result.length = 1;
     }
     else if (at[result.length] == '*')
     {
@@ -178,13 +190,29 @@ GetToken(char *at)
     return result;
 }
 
-/*
+u16 NumericExpression(Token *token);
 u16
 NumericFactor(Token *token)
 {
     u16 result = 0;
 
-    result = token->value;
+    do
+    {
+        if (0)
+        {
+        }
+        else if (token->type == TokenType_LeftParenthesis)
+        {
+            *token = GetToken(token->text + token->length);
+            result = NumericExpression(token);
+            *token = GetToken(token->text + token->length);
+        }
+        else
+        {
+            result = token->value;
+            *token = GetToken(token->text + token->length);
+        }
+    } while (token->type == TokenType_LeftParenthesis);
 
     return result;
 }
@@ -196,18 +224,29 @@ NumericTerm(Token *token)
 
     do
     {
-        result = NumericFactor(token);
-        *token = GetToken(token->text + token->length);
-    }
-    while (token->type == TokenType_Asterisk ||
-           token->type == TokenType_Slash)
-
-    //b32 multiplyOperation = token->type == TokenType_Asterisk ? 1 : 0;
-    //    result = multiplyOperation ? NumericFactor(token) : 1 / NumericFacotr(token);
+        if (0)
+        {
+        }
+        else if (token->type == TokenType_Asterisk)
+        {
+            *token = GetToken(token->text + token->length);
+            result *= NumericFactor(token);
+        }
+        else if (token->type == TokenType_Slash)
+        {
+            *token = GetToken(token->text + token->length);
+            result /= NumericFactor(token);
+        }
+        else
+        {
+            result = NumericFactor(token);
+        }
+    } while (token->type == TokenType_Asterisk ||
+             token->type == TokenType_Slash);
 
     return result;
 }
-// 2 + 3 * 4
+
 u16
 NumericExpression(Token *token)
 {
@@ -215,18 +254,28 @@ NumericExpression(Token *token)
 
     do
     {
-        result = NumericTerm(token);
-        *token = GetToken(token->text + token->length);
-    }
-    while (token->type == TokenType_PlusSign ||
-           token->type == TokenType_HyphenMinus)
-
-    //b32 addOperation = token->type == TokenType_PlusSign ? 1 : 0;
-    //    result = addOperation ? NumericTerm(token) : -NumericTerm(token);
+        if (0)
+        {
+        }
+        else if (token->type == TokenType_PlusSign)
+        {
+            *token = GetToken(token->text + token->length);
+            result += NumericTerm(token);
+        }
+        else if (token->type == TokenType_HyphenMinus)
+        {
+            *token = GetToken(token->text + token->length);
+            result -= NumericTerm(token);
+        }
+        else
+        {
+            result = NumericTerm(token);
+        }
+    } while (token->type == TokenType_PlusSign ||
+             token->type == TokenType_HyphenMinus);
 
     return result;
 }
-*/
 
 void
 Assemble(char *contents, u8 *output)
@@ -246,22 +295,7 @@ Assemble(char *contents, u8 *output)
         if (token.type == TokenType_Times)
         {
             token = GetToken(token.text + token.length);
-            if (token.type == TokenType_Decimal ||
-                token.type == TokenType_Hexadecimal)
-            {
-                times = token.value;
-            }
-
-            for (token = GetToken(token.text + token.length); token.type != TokenType_DefineByte; token = GetToken(token.text + token.length))
-            {
-                b32 addOperation = token.type == TokenType_PlusSign ? 1 : 0;
-                token = GetToken(token.text + token.length);
-                if (token.type == TokenType_Decimal ||
-                    token.type == TokenType_Hexadecimal)
-                {
-                    times = addOperation ? times + token.value : times - token.value;
-                }
-            }
+            times = NumericExpression(&token);
         }
 
         if (token.type == TokenType_DefineByte)
@@ -269,22 +303,7 @@ Assemble(char *contents, u8 *output)
             u8 value = 0;
 
             token = GetToken(token.text + token.length);
-            if (token.type == TokenType_Decimal ||
-                token.type == TokenType_Hexadecimal)
-            {
-                value = (u8)token.value;
-            }
-
-            for (token = GetToken(token.text + token.length); token.type != TokenType_EndOfLine; token = GetToken(token.text + token.length))
-            {
-                b32 multiplyOperation = token.type == TokenType_Asterisk ? 1 : 0;
-                token = GetToken(token.text + token.length);
-                if (token.type == TokenType_Decimal ||
-                    token.type == TokenType_Hexadecimal)
-                {
-                    value = multiplyOperation ? value * (u8)token.value : value / (u8)token.value;
-                }
-            }
+            value = (u8)NumericExpression(&token);
 
             for (; times > 0; --times)
             {
