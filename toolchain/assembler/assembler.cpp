@@ -190,6 +190,14 @@ GetToken(char *at)
     return result;
 }
 
+inline Token
+GetNext(Token *token)
+{
+    Token result = GetToken(token->text + token->length);
+
+    return result;
+}
+
 u16 NumericExpression(Token *token);
 u16
 NumericFactor(Token *token)
@@ -203,14 +211,14 @@ NumericFactor(Token *token)
         }
         else if (token->type == TokenType_LeftParenthesis)
         {
-            *token = GetToken(token->text + token->length);
+            *token = GetNext(token);
             result = NumericExpression(token);
-            *token = GetToken(token->text + token->length);
+            *token = GetNext(token);
         }
         else
         {
             result = token->value;
-            *token = GetToken(token->text + token->length);
+            *token = GetNext(token);
         }
     } while (token->type == TokenType_LeftParenthesis);
 
@@ -229,12 +237,12 @@ NumericTerm(Token *token)
         }
         else if (token->type == TokenType_Asterisk)
         {
-            *token = GetToken(token->text + token->length);
+            *token = GetNext(token);
             result *= NumericFactor(token);
         }
         else if (token->type == TokenType_Slash)
         {
-            *token = GetToken(token->text + token->length);
+            *token = GetNext(token);
             result /= NumericFactor(token);
         }
         else
@@ -259,12 +267,12 @@ NumericExpression(Token *token)
         }
         else if (token->type == TokenType_PlusSign)
         {
-            *token = GetToken(token->text + token->length);
+            *token = GetNext(token);
             result += NumericTerm(token);
         }
         else if (token->type == TokenType_HyphenMinus)
         {
-            *token = GetToken(token->text + token->length);
+            *token = GetNext(token);
             result -= NumericTerm(token);
         }
         else
