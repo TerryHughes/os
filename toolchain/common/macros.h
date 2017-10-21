@@ -1,4 +1,5 @@
 #define internal static
+#define global_variable static
 
 #define U32Maximum ((u32)-1)
 
