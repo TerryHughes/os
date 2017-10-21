@@ -36,6 +36,8 @@ typedef enum
     TokenType_DefineByte,
     TokenType_Jump,
 
+    TokenType_BeginningOfSection,
+    TokenType_BeginningOfLine,
     TokenType_EndOfLine,
     TokenType_EndOfStream,
 } AssemblerTokenType;
@@ -95,6 +97,16 @@ GetToken(char *at)
     //    result.type = TokenType_Slash;
     //    result.length = 1;
     //}
+    else if (StringStartsWith(at, "$$"))
+    {
+        result.type = TokenType_BeginningOfSection;
+        result.length = 2;
+    }
+    else if (at[result.length] == '$')
+    {
+        result.type = TokenType_BeginningOfLine;
+        result.length = 1;
+    }
     else if (StringStartsWith(at, "\r\n"))
     {
         result.type = TokenType_EndOfLine;
@@ -198,6 +210,9 @@ GetNext(Token *token)
     return result;
 }
 
+global_variable u16 beginningOfSection = 0;
+global_variable u16 beginningOfLine = 0;
+
 u16 NumericExpression(Token *token);
 u16
 NumericFactor(Token *token)
@@ -213,6 +228,16 @@ NumericFactor(Token *token)
         {
             *token = GetNext(token);
             result = NumericExpression(token);
+            *token = GetNext(token);
+        }
+        else if (token->type == TokenType_BeginningOfSection)
+        {
+            result = beginningOfSection;
+            *token = GetNext(token);
+        }
+        else if (token->type == TokenType_BeginningOfLine)
+        {
+            result = beginningOfLine;
             *token = GetNext(token);
         }
         else
@@ -333,6 +358,11 @@ Assemble(char *contents, u8 *output)
             {
                 output[index++] = (u8)(label.value - (index + 1));
             }
+        }
+
+        if (token.type == TokenType_EndOfLine)
+        {
+            beginningOfLine = index;
         }
 
         if (token.type == TokenType_Unknown)
